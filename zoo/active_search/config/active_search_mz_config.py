@@ -17,11 +17,13 @@ reanalyze_ratio = 0
 
 single_action_shape = 7
 observation_space = 90015
+num_uavs = 2
+num_people = 15
 # ==============================================================
 # end of the most frequently changed config specified by the user
 # ==============================================================
 
-cartpole_muzero_config = dict(
+activesearch_muzero_config = dict(
     exp_name=f'Xia_result/activesearch_muzero_ns{num_simulations}_upc{update_per_collect}_rr{reanalyze_ratio}_seed0',
     env=dict(
         env_name='ActiveSearch-v0',
@@ -33,13 +35,13 @@ cartpole_muzero_config = dict(
         manager=dict(shared_memory=False, ),
         single_action_shape = single_action_shape,
         observation_space = observation_space,
-        num_uavs = 2,
-        num_people = 15
+        num_uavs = num_uavs,
+        num_people = num_people
     ),
     policy=dict(
         model=dict(
-            observation_shape=90015,
-            action_space_size=2401,
+            observation_shape=300*300+3*num_uavs,
+            action_space_size=single_action_shape**num_uavs,
             model_type='mlp', 
             lstm_hidden_size=128,
             latent_state_dim=128,
@@ -66,10 +68,10 @@ cartpole_muzero_config = dict(
     ),
 )
 
-cartpole_muzero_config = EasyDict(cartpole_muzero_config)
-main_config = cartpole_muzero_config
+activesearch_muzero_config = EasyDict(activesearch_muzero_config)
+main_config = activesearch_muzero_config
 
-cartpole_muzero_create_config = dict(
+activesearch_muzero_create_config = dict(
     env=dict(
         type='activesearch_lightzero',
         import_names=['zoo.active_search.active_search_env'],
@@ -80,8 +82,8 @@ cartpole_muzero_create_config = dict(
         import_names=['lzero.policy.muzero'],
     ),
 )
-cartpole_muzero_create_config = EasyDict(cartpole_muzero_create_config)
-create_config = cartpole_muzero_create_config
+activesearch_muzero_create_config = EasyDict(activesearch_muzero_create_config)
+create_config = activesearch_muzero_create_config
 
 if __name__ == "__main__":
     # Users can use different train entry by specifying the entry_type.

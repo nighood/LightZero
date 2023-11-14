@@ -25,7 +25,7 @@ class ActiveSearchEnv(BaseEnv):
         # action_space
         self._single_action_shape = self._cfg.single_action_shape   # e.g. 7
         self._real_single_action_space = list(range(self._single_action_shape))
-        self._real_action_space = np.array(list(product(self._real_single_action_space, repeat=self._robot_num)))
+        self._real_action_space = np.array(list(product(self._real_single_action_space, repeat=self._num_uavs)))
         one_uav_action_n = len(self._real_action_space)
         self._action_space = gymnasium.spaces.Discrete(one_uav_action_n)
         # obs_space
@@ -37,13 +37,8 @@ class ActiveSearchEnv(BaseEnv):
     def reset(self) -> np.ndarray:
         if not self._init_flag:
             self._env = gymnasium.make('active-search-v0')
-            # if self._replay_path is not None:
-            #     self._env = gym.wrappers.RecordVideo(
-            #         self._env,
-            #         video_folder=self._replay_path,
-            #         episode_trigger=lambda episode_id: True,
-            #         name_prefix='rl-video-{}'.format(id(self))
-            #     )
+            if self._replay_path is not None:
+                self.enable_save_replay(self._replay_path)
             # if hasattr(self._cfg, 'obs_plus_prev_action_reward') and self._cfg.obs_plus_prev_action_reward:
             #     self._env = ObsPlusPrevActRewWrapper(self._env)
             self._init_flag = True
@@ -56,7 +51,7 @@ class ActiveSearchEnv(BaseEnv):
             self._action_space.seed(self._seed)
         self._eval_episode_return = 0
         # process obs
-        raw_obs = self._env.reset()
+        raw_obs, info = self._env.reset()
         action_mask = np.ones(self._action_space.n, 'int8')
         obs = {'observation': raw_obs, 'action_mask': action_mask, 'to_play': -1}
 
@@ -83,6 +78,9 @@ class ActiveSearchEnv(BaseEnv):
         if done:
             info['eval_episode_return'] = self._eval_episode_return
             # logging.INFO('one game finish!')
+        if self._replay_path is not None:
+            # please only turn on when eval
+            self.render()
 
         action_mask = np.ones(self._action_space.n, 'int8')
         obs = {'observation': raw_obs, 'action_mask': action_mask, 'to_play': -1}
@@ -93,6 +91,10 @@ class ActiveSearchEnv(BaseEnv):
         if replay_path is None:
             replay_path = './video'
         self._replay_path = replay_path
+
+    def render(self):
+        # TODO(rjy): should save gif
+        self._env.render()
 
     def random_action(self) -> np.ndarray:
         random_action = self.action_space.sample()

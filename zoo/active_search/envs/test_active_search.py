@@ -1,6 +1,6 @@
 import numpy as np
 from easydict import EasyDict
-from zoo.active_search.envs.active_seach_env import ActiveSearchEnv
+from zoo.active_search.envs.active_search_env import ActiveSearchEnv
 
 mcfg=EasyDict(
         env_name='active-search-v0',

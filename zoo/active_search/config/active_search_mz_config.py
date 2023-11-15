@@ -1,5 +1,7 @@
 # single_action_shape 单个动作空间大小
 # observation_space
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "7"
 
 from easydict import EasyDict
 
@@ -74,9 +76,9 @@ main_config = activesearch_muzero_config
 activesearch_muzero_create_config = dict(
     env=dict(
         type='activesearch_lightzero',
-        import_names=['zoo.active_search.active_search_env'],
+        import_names=['zoo.active_search.envs.active_search_env'],
     ),
-    env_manager=dict(type='subprocess'),
+    env_manager=dict(type='base'),
     policy=dict(
         type='muzero',
         import_names=['lzero.policy.muzero'],

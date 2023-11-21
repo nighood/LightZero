@@ -7,7 +7,8 @@ mcfg=EasyDict(
         num_uavs = 2,
         num_people = 15,
         single_action_shape = 7,
-        observation_space = 90006
+        observation_space = 90006,
+        replay_path = 'Xia_result/video',
         )
 
 def test_naive(cfg):
@@ -16,7 +17,7 @@ def test_naive(cfg):
     assert env._seed == 314
     obs = env.reset()
     assert obs['observation'].shape == (90006,)
-    for i in range(10):
+    for i in range(100000):
         random_action = env.random_action()
         timestep = env.step(random_action)
         print(timestep)
@@ -24,6 +25,8 @@ def test_naive(cfg):
         assert isinstance(timestep.done, bool)
         assert timestep.obs['observation'].shape == (90006,)
         assert timestep.reward.shape == (1, )
+        if timestep.done:
+            break
     print(env.observation_space, env.action_space, env.reward_space)
     env.close()
 

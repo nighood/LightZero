@@ -4,6 +4,7 @@ import gymnasium
 import numpy as np
 from itertools import product
 import logging
+import imageio
 
 from ding.envs import BaseEnv, BaseEnvTimestep
 from ding.envs import ObsPlusPrevActRewWrapper
@@ -19,7 +20,7 @@ class ActiveSearchEnv(BaseEnv):
     def __init__(self, cfg: dict = {}) -> None:
         self._cfg = cfg
         self._init_flag = False
-        self._replay_path = None
+        self._replay_path = self._cfg.get('replay_path', None)
         self._num_uavs = self._cfg.num_uavs
         self._num_people = self._cfg.num_people
         # action_space
@@ -75,12 +76,14 @@ class ActiveSearchEnv(BaseEnv):
         raw_obs, rew, done, _, info = self._env.step(real_action)
 
         self._eval_episode_return += rew
-        if done:
-            info['eval_episode_return'] = self._eval_episode_return
-            # logging.INFO('one game finish!')
         if self._replay_path is not None:
             # please only turn on when eval
             self.render()
+        if done:
+            info['eval_episode_return'] = self._eval_episode_return
+            self.display_frames_as_gif(self._video_frames, self._replay_path)
+            self._video_frames = []
+            # logging.INFO('one game finish!')
 
         action_mask = np.ones(self._action_space.n, 'int8')
         obs = {'observation': raw_obs, 'action_mask': action_mask, 'to_play': -1}
@@ -91,10 +94,12 @@ class ActiveSearchEnv(BaseEnv):
         if replay_path is None:
             replay_path = './video'
         self._replay_path = replay_path
+        self._env.config['save_replay'] = True
+        self._video_frames = []
 
     def render(self):
         # TODO(rjy): should save gif
-        self._env.render()
+        self._video_frames.append(self._env.render())
 
     def random_action(self) -> np.ndarray:
         random_action = self.action_space.sample()
@@ -115,3 +120,6 @@ class ActiveSearchEnv(BaseEnv):
 
     def __repr__(self) -> str:
         return "LightZero Active Search Env"
+    
+    def display_frames_as_gif(self, frames, path):
+        imageio.mimsave(path+'/video.gif', frames, duration=20)

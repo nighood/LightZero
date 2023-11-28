@@ -81,8 +81,9 @@ class ActiveSearchEnv(BaseEnv):
             self.render()
         if done:
             info['eval_episode_return'] = self._eval_episode_return
-            self.display_frames_as_gif(self._video_frames, self._replay_path)
-            self._video_frames = []
+            if self._replay_path is not None:
+                self.display_frames_as_gif(self._video_frames, self._replay_path)
+                self._video_frames = []
             # logging.INFO('one game finish!')
 
         action_mask = np.ones(self._action_space.n, 'int8')

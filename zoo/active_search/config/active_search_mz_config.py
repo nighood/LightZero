@@ -14,19 +14,25 @@ evaluator_env_num = 3
 num_simulations = 25
 update_per_collect = 100
 batch_size = 256
-max_env_step = int(1e5)
+max_env_step = int(5e5)
 reanalyze_ratio = 0
+seed = 0
 
-single_action_shape = 7
-observation_space = 90015
+width, height, h_3d = 80, 80, 100
+uav_action_lst = [(0, 0, 0), (5, 0, 0), (0, 5, 0), (0, 0, 2), (-5, 0, 0), (0, -5, 0), (0, 0, -2)]
 num_uavs = 2
-num_people = 15
+num_people = 30
+search_banjing_max = 10
+uav_h_min = 10
+single_action_shape = len(uav_action_lst)
+observation_space = width * height + 3 * num_uavs
+
 # ==============================================================
 # end of the most frequently changed config specified by the user
 # ==============================================================
 
 activesearch_muzero_config = dict(
-    exp_name=f'Xia_result/activesearch_muzero_ns{num_simulations}_upc{update_per_collect}_rr{reanalyze_ratio}_seed0',
+    exp_name=f'Xia_result/1206new_env/activesearch_muzero_normr_np{num_people}_nu{num_uavs}_an{single_action_shape}_seed0',
     env=dict(
         env_name='ActiveSearch-v0',
         continuous=False,
@@ -38,11 +44,40 @@ activesearch_muzero_config = dict(
         single_action_shape = single_action_shape,
         observation_space = observation_space,
         num_uavs = num_uavs,
-        num_people = num_people
+        num_people = num_people,
+        env_config=dict(
+            width=width,
+            height=height,
+            h_3d=h_3d,
+            seed=seed,
+            num_uavs=num_uavs,
+            num_people=num_people,
+            EP_MAX_TIME=200,
+            uav_action_lst=uav_action_lst,
+            observation_size=width*height+3*num_uavs,
+            search_banjing_max=search_banjing_max,
+            save_replay=False,
+        ),
+        uav_config = dict(
+            width=width,
+            height=height,
+            h_3d=h_3d,
+            seed=seed,
+            h_min=uav_h_min,
+            uav_action_lst=uav_action_lst,
+            search_banjing_max=search_banjing_max,
+        ),
+        people_config = dict(
+            width=width,
+            height=height,
+            h_3d=h_3d,
+            seed=seed,
+            search_banjing_max=search_banjing_max,
+        )
     ),
     policy=dict(
         model=dict(
-            observation_shape=300*300+3*num_uavs,
+            observation_shape=observation_space,
             action_space_size=single_action_shape**num_uavs,
             model_type='mlp', 
             lstm_hidden_size=128,
@@ -59,7 +94,7 @@ activesearch_muzero_config = dict(
         optim_type='Adam',
         lr_piecewise_constant_decay=False,
         learning_rate=0.003,
-        ssl_loss_weight=2,  # NOTE: default is 0.
+        ssl_loss_weight=0,  # NOTE: default is 0.
         num_simulations=num_simulations,
         reanalyze_ratio=reanalyze_ratio,
         n_episode=n_episode,
@@ -100,4 +135,4 @@ if __name__ == "__main__":
         """
         from lzero.entry import train_muzero_with_gym_env as train_muzero
 
-    train_muzero([main_config, create_config], seed=0, max_env_step=max_env_step)
+    train_muzero([main_config, create_config], seed=seed, max_env_step=max_env_step)

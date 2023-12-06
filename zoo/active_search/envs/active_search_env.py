@@ -37,7 +37,7 @@ class ActiveSearchEnv(BaseEnv):
 
     def reset(self) -> np.ndarray:
         if not self._init_flag:
-            self._env = gymnasium.make('active-search-v0')
+            self._env = gymnasium.make('active-search-v0', custom_config = self._cfg)
             if self._replay_path is not None:
                 self.enable_save_replay(self._replay_path)
             # if hasattr(self._cfg, 'obs_plus_prev_action_reward') and self._cfg.obs_plus_prev_action_reward:
@@ -123,4 +123,4 @@ class ActiveSearchEnv(BaseEnv):
         return "LightZero Active Search Env"
     
     def display_frames_as_gif(self, frames, path):
-        imageio.mimsave(path+'/video.gif', frames, duration=20)
+        imageio.mimsave(path+'/test.gif', frames, duration=20)
